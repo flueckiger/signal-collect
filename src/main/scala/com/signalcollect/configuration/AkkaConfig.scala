@@ -65,7 +65,7 @@ akka {
     # log-received-messages = on
   # }
 
-  scheduler.tick-duration = 2ms
+  scheduler.tick-duration = 10ms
     
   actor {
     """ + {
