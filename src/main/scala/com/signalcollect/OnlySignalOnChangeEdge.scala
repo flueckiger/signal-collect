@@ -46,7 +46,7 @@ abstract class OnlySignalOnChangeEdge[SourceIdType, TargetIdType](targetId: Targ
    *
    *  @param messageBus an instance of MessageBus which can be used by this edge to interact with the graph.
    */
-  override def executeSignalOperation(sourceVertex: Vertex[_, _, _, _], graphEditor: GraphEditor[Any, Any]) {
+  override def executeSignalOperation[GraphIdUpperBound, GraphSignalUpperBound](sourceVertex: Vertex[_, _, GraphIdUpperBound, GraphSignalUpperBound], graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     val newSignal = signal
     if (!lastSignalSent.isDefined || !lastSignalSent.get.equals(newSignal)) {
       graphEditor.sendToWorkerForVertexIdHash(SignalMessageWithSourceId(targetId, sourceId, newSignal), cachedTargetIdHashCode)

@@ -33,10 +33,12 @@ package com.signalcollect
  *
  *  @author Philip Stutz
  */
-abstract class DataFlowVertex[Id, State](
+abstract class DataFlowVertex[Id, State](id: Id, state: State) extends DataFlowVertexEx[Id, State, Any, Any](id, state) {}
+
+abstract class DataFlowVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound](
   val id: Id,
   var state: State)
-  extends AbstractVertex[Id, State] {
+  extends AbstractVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] {
 
   type Signal
 
@@ -44,11 +46,11 @@ abstract class DataFlowVertex[Id, State](
     state = s
   }
 
-  def deliverSignalWithSourceId(signal: Any, sourceId: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  def deliverSignalWithSourceId(signal: GraphSignalUpperBound, sourceId: GraphIdUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     deliverSignalWithoutSourceId(signal, graphEditor)
   }
 
-  def deliverSignalWithoutSourceId(signal: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  def deliverSignalWithoutSourceId(signal: GraphSignalUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     setState(collect(signal.asInstanceOf[Signal]))
     true
   }
@@ -70,7 +72,7 @@ abstract class DataFlowVertex[Id, State](
    *
    *  @param graphEditor can be used by this vertex to interact with the graph.
    */
-  override def executeCollectOperation(graphEditor: GraphEditor[Any, Any]) {
+  override def executeCollectOperation(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     super.executeCollectOperation(graphEditor)
   }
 

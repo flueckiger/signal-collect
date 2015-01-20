@@ -19,14 +19,16 @@
 
 package com.signalcollect
 
-trait ResetStateAfterSignaling[Id, State] extends AbstractVertex[Id, State] {
+trait ResetStateAfterSignaling[Id, State] extends ResetStateAfterSignalingEx[Id, State, Any, Any] {}
+
+trait ResetStateAfterSignalingEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] extends AbstractVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] {
 
   def resetState: State
 
   /**
    * Delegates to superclass and resets the state to the initial state after signaling.
    */
-  abstract override def executeSignalOperation(graphEditor: GraphEditor[Any, Any]) {
+  abstract override def executeSignalOperation(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     super.executeSignalOperation(graphEditor)
     setState(resetState)
   }

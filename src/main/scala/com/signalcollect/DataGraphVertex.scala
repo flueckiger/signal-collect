@@ -32,9 +32,11 @@ import scala.collection.JavaConversions.mapAsScalaMap
  *
  *  @author Philip Stutz
  */
-abstract class DataGraphVertex[Id, State](
+abstract class DataGraphVertex[Id, State](id: Id, state: State) extends DataGraphVertexEx[Id, State, Any, Any](id, state) {}
+
+abstract class DataGraphVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound](
   val id: Id,
-  var state: State) extends AbstractVertex[Id, State] with SumOfOutWeights[Id, State] {
+  var state: State) extends AbstractVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] with SumOfOutWeightsEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] {
 
   type Signal
 
@@ -63,14 +65,14 @@ abstract class DataGraphVertex[Id, State](
    *  Currently a Java HashMap is used as the implementation, but we will replace it with a more specialized
    *  implementation in a future release.
    */
-  protected var mostRecentSignalMap = Map.empty[Any, Signal]
+  protected var mostRecentSignalMap = Map.empty[GraphIdUpperBound, Signal]
 
-  override def deliverSignalWithSourceId(signal: Any, sourceId: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  override def deliverSignalWithSourceId(signal: GraphSignalUpperBound, sourceId: GraphIdUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     mostRecentSignalMap += ((sourceId, signal.asInstanceOf[Signal]))
     false
   }
 
-  override def deliverSignalWithoutSourceId(signal: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  override def deliverSignalWithoutSourceId(signal: GraphSignalUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     throw new Exception("Data graph vertices only make sense if the source id is known.")
     false
   }
@@ -82,7 +84,7 @@ abstract class DataGraphVertex[Id, State](
    *
    *  @param graphEditor an instance of GraphEditor which can be used by this vertex to interact with the graph.
    */
-  override def executeCollectOperation(graphEditor: GraphEditor[Any, Any]) {
+  override def executeCollectOperation(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     super.executeCollectOperation(graphEditor)
     setState(collect)
   }
@@ -104,7 +106,7 @@ abstract class DataGraphVertex[Id, State](
   }
 
   /**
-   * Exposing the vertex details on a DataGraphVertex shows its
+   * Exposing the vertex details on a DataGraphVertexEx shows its
    * mostRecentSignalMap.
    * @return a map with a single element, the mostRecentSignalMap
    */

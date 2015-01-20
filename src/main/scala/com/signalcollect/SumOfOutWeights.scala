@@ -19,14 +19,16 @@
 
 package com.signalcollect
 
-trait SumOfOutWeights[Id, State] extends AbstractVertex[Id, State] {
+trait SumOfOutWeights[Id, State] extends SumOfOutWeightsEx[Id, State, Any, Any] {}
+
+trait SumOfOutWeightsEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] extends AbstractVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] {
 
   /**
    * @return The sum of the weights of all outgoing edges.
    */
   var sumOfOutWeights: Double = 0
 
-  abstract override def addEdge(e: Edge[Any], graphEditor: GraphEditor[Any, Any]): Boolean = {
+  abstract override def addEdge(e: Edge[GraphIdUpperBound], graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     val added = super.addEdge(e, graphEditor)
     if (added) {
       sumOfOutWeights += e.weight
@@ -34,7 +36,7 @@ trait SumOfOutWeights[Id, State] extends AbstractVertex[Id, State] {
     added
   }
 
-  abstract override def removeEdge(targetId: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  abstract override def removeEdge(targetId: GraphIdUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     val outgoingEdge = outgoingEdges.get(targetId)
     val weightToSubtract = outgoingEdge match {
       case None => 0

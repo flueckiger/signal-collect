@@ -44,7 +44,7 @@ abstract class Edge[+TargetId] extends Serializable {
   def source: Source
 
   /** Called when the edge is attached to a source vertex */
-  def onAttach(source: Vertex[_, _, _, _], graphEditor: GraphEditor[Any, Any])
+  def onAttach[GraphIdUpperBound, GraphSignalUpperBound](source: Vertex[_, _, GraphIdUpperBound, GraphSignalUpperBound], graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound])
 
   /** The weight of this edge. */
   def weight: Double
@@ -69,6 +69,6 @@ abstract class Edge[+TargetId] extends Serializable {
    *
    *  @param messageBus an instance of MessageBus which can be used by this edge to interact with the graph.
    */
-  def executeSignalOperation(sourceVertex: Vertex[_, _, _, _], graphEditor: GraphEditor[Any, Any])
+  def executeSignalOperation[GraphIdUpperBound, GraphSignalUpperBound](sourceVertex: Vertex[_, _, GraphIdUpperBound, GraphSignalUpperBound], graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound])
 
 }

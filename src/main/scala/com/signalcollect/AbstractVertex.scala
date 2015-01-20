@@ -25,14 +25,16 @@ import com.signalcollect.configuration.ActorSystemRegistry
 import scala.annotation.elidable
 import scala.annotation.elidable._
 
-abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
+abstract class AbstractVertex[Id, State] extends AbstractVertexEx[Id, State, Any, Any] {}
+
+abstract class AbstractVertexEx[Id, State, GraphIdUpperBound, GraphSignalUpperBound] extends Vertex[Id, State, GraphIdUpperBound, GraphSignalUpperBound] {
 
   /**
    * hashCode is cached for better performance
    */
   override lazy val hashCode = id.hashCode // Lazy to prevent premature initialization when using Java API.
 
-  def afterInitialization(graphEditor: GraphEditor[Any, Any]) = {}
+  def afterInitialization(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) = {}
 
   /**
    * Calls to debug level logging are by default disregarded by the compiler and do not get executed.
@@ -83,10 +85,10 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    *  Currently a Java HashMap is used as the implementation, but we will replace it with a more specialized
    *  implementation in a future release.
    */
-  var outgoingEdges = Map.empty[Any, Edge[Any]]
+  var outgoingEdges = Map.empty[GraphIdUpperBound, Edge[GraphIdUpperBound]]
 
   /** The edges that this vertex is connected to. */
-  def edges: Traversable[Edge[Any]] = outgoingEdges.values
+  def edges: Traversable[Edge[GraphIdUpperBound]] = outgoingEdges.values
 
   /** The state of this vertex when it last signaled. */
   var lastSignalState: Option[State] = None
@@ -102,7 +104,7 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    *
    * @param e the edge to be added.
    */
-  def addEdge(edge: Edge[Any], graphEditor: GraphEditor[Any, Any]): Boolean = {
+  def addEdge(edge: Edge[GraphIdUpperBound], graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     outgoingEdges.get(edge.targetId) match {
       case None =>
         edgesModifiedSinceSignalOperation = true
@@ -119,7 +121,7 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    * Removes an outgoing {@link Edge} from this {@link Vertex}.
    * @param e the edge to be added.
    */
-  def removeEdge(targetId: Any, graphEditor: GraphEditor[Any, Any]): Boolean = {
+  def removeEdge(targetId: GraphIdUpperBound, graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Boolean = {
     val outgoingEdge = outgoingEdges.get(targetId)
     outgoingEdge match {
       case None =>
@@ -136,7 +138,7 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    * Removes all outgoing {@link Edge}s from this {@link Vertex}.
    * @return returns the number of {@link Edge}s that were removed.
    */
-  def removeAllEdges(graphEditor: GraphEditor[Any, Any]): Int = {
+  def removeAllEdges(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]): Int = {
     val edgesRemoved = outgoingEdges.size
     for (outgoingEdge <- outgoingEdges.keys.toSeq) { // Convert to sequence to avoid concurrent modification exception in Java map.
       removeEdge(outgoingEdge, graphEditor)
@@ -153,13 +155,13 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    * @see Worker
    * @see Edge#executeSignalOperation
    */
-  def executeSignalOperation(graphEditor: GraphEditor[Any, Any]) {
+  def executeSignalOperation(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     edgesModifiedSinceSignalOperation = false
     lastSignalState = Some(state)
     doSignal(graphEditor)
   }
 
-  def doSignal(graphEditor: GraphEditor[Any, Any]) {
+  def doSignal(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     outgoingEdges.values.foreach(_.executeSignalOperation(this, graphEditor))
   }
 
@@ -168,7 +170,7 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
    *
    *  @param graphEditor an instance of GraphEditor which can be used by this vertex to interact with the graph.
    */
-  def executeCollectOperation(graphEditor: GraphEditor[Any, Any]) {
+  def executeCollectOperation(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) {
     edgesModifiedSinceCollectOperation = false
   }
 
@@ -201,12 +203,12 @@ abstract class AbstractVertex[Id, State] extends Vertex[Id, State, Any, Any] {
   /**
    *  This method gets called by the framework before the vertex gets removed.
    */
-  def beforeRemoval(graphEditor: GraphEditor[Any, Any]) = {}
+  def beforeRemoval(graphEditor: GraphEditor[GraphIdUpperBound, GraphSignalUpperBound]) = {}
 
   /**
    * Returns the ids of the target vertices of outgoing edges of the vertex.
    */
-  def targetIds: Iterable[Any] = {
+  def targetIds: Iterable[GraphIdUpperBound] = {
     outgoingEdges.keys
   }
 
