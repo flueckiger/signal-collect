@@ -1,7 +1,3 @@
-import AssemblyKeys._ 
-
-assemblySettings
-
 /** Project */
 name := "signal-collect"
 
