@@ -39,6 +39,7 @@ import com.signalcollect.interfaces.WorkerApi
 import com.signalcollect.interfaces.WorkerStatistics
 import com.signalcollect.interfaces.WorkerStatistics.apply
 import com.signalcollect.interfaces.NodeStatistics
+import com.signalcollect.serialization.DefaultSerializer
 
 /**
  * Class that allows to interact with all the workers as if there were just one worker.
@@ -120,6 +121,10 @@ class DefaultWorkerApi[Id, Signal](
     get(futures(_.foreachVertexWithGraphEditor(f)))
   }
 
+  override def aggregateOnWorker[WorkerResult](aggregationOperation: Array[Byte]): Array[Byte] = {
+    throw new UnsupportedOperationException("DefaultWorkerApi does not support this operation.")
+  }
+
   override def aggregateOnWorker[WorkerResult](aggregationOperation: ComplexAggregation[WorkerResult, _]): WorkerResult = {
     throw new UnsupportedOperationException("DefaultWorkerApi does not support this operation.")
   }
@@ -127,8 +132,9 @@ class DefaultWorkerApi[Id, Signal](
   override def aggregateAll[WorkerResult, EndResult](aggregationOperation: ComplexAggregation[WorkerResult, EndResult]): EndResult = {
     // TODO: Identify and fix bug that appears on large graphs with the TopK aggregator when using futures.
     //val aggregateArray = futures(_.aggregateOnWorker(aggregationOperation)) map get
-    val workerAggregates = get(futures(_.aggregateOnWorker(aggregationOperation)))
-    aggregationOperation.aggregationOnCoordinator(workerAggregates)
+    val serializedAggregationOperation = DefaultSerializer.write(aggregationOperation)
+    val workerAggregates = get(futures(_.aggregateOnWorker[WorkerResult](serializedAggregationOperation)))
+    aggregationOperation.aggregationOnCoordinator(workerAggregates map (x => DefaultSerializer.read[WorkerResult](x)))
   }
 
   override def setSignalThreshold(t: Double) {

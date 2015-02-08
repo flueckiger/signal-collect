@@ -43,6 +43,7 @@ trait WorkerApi[Id, Signal] {
   def foreachVertex(f: Vertex[Id, _, Id, Signal] => Unit)
   def foreachVertexWithGraphEditor(f: GraphEditor[Id, Signal] => Vertex[Id, _, Id, Signal] => Unit)
 
+  def aggregateOnWorker[WorkerResult](aggregationOperation: Array[Byte]): Array[Byte]
   def aggregateOnWorker[WorkerResult](aggregationOperation: ComplexAggregation[WorkerResult, _]): WorkerResult
   def aggregateAll[WorkerResult, EndResult](aggregationOperation: ComplexAggregation[WorkerResult, EndResult]): EndResult
 

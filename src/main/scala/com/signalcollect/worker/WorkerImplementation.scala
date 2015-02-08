@@ -415,6 +415,10 @@ class WorkerImplementation[@specialized(Int, Long) Id, Signal](
     messageBusFlushed = false
   }
 
+  override def aggregateOnWorker[WorkerResult](aggregationOperation: Array[Byte]): Array[Byte] = {
+    DefaultSerializer.write(aggregateOnWorker(DefaultSerializer.read[ComplexAggregation[WorkerResult, _]](aggregationOperation)))
+  }
+
   override def aggregateOnWorker[WorkerResult](aggregationOperation: ComplexAggregation[WorkerResult, _]): WorkerResult = {
     aggregationOperation.aggregationOnWorker(vertexStore.vertices.stream)
   }
